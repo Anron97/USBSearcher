@@ -42,6 +42,12 @@ public class UsbSearcherController {
         freeSizeColumn.setCellValueFactory(cellData -> cellData.getValue().freeSizeProperty());
         busySizeColumn.setCellValueFactory(cellData -> cellData.getValue().busySizeProperty());
         tableView.setItems(listDevices);
+        unmount.setDisable(true);
+        tableView.getSelectionModel().selectedItemProperty().addListener((
+                (observable, oldValue, newValue) -> {
+                    if(newValue.getSystemName().contains("dev")) unmount.setDisable(false);
+                    else unmount.setDisable(true);
+                }));
     }
 
     public UsbSearcherController() {
@@ -55,6 +61,7 @@ public class UsbSearcherController {
                     + System.getenv("PASSWORD") + " | sudo -S eject " + tableView.getSelectionModel().getSelectedItem().getSystemName()});
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             if (reader.readLine().contains("target is busy")) AlertWindow.showErrorAlert("Device is busy");
+            else unmount.setDisable(true);
         } catch (IOException e) {
             e.printStackTrace();
         }
