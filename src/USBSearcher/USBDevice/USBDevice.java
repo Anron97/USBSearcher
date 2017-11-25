@@ -92,4 +92,8 @@ public class USBDevice {
     public int hashCode() {
         return name.toString().hashCode();
     }
+
+    public boolean isCorrect() {
+        return !(systemName.equals("") || name.equals("") || size.equals("") || freeSize.equals("") || busySize.equals(""));
+    }
 }

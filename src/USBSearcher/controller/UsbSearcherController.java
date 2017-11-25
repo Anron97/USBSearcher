@@ -46,21 +46,15 @@ public class UsbSearcherController {
 
     public UsbSearcherController() {
         searcher = new USBSearcher(listDevices);
-//        searcher.start();
-        try {
-            searcher.getMTPDevices();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        searcher.start();
     }
 
     public void unmountDevice() {
         try {
-            System.out.println("eject");
             Process process = Runtime.getRuntime().exec(new String[]{"/bin/bash", "-c", "echo "
                     + System.getenv("PASSWORD") + " | sudo -S eject " + tableView.getSelectionModel().getSelectedItem().getSystemName()});
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            if (reader.readLine() != null) AlertWindow.showErrorAlert("Device is busy");
+            if (reader.readLine().contains("target is busy")) AlertWindow.showErrorAlert("Device is busy");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -24,6 +24,7 @@ public class USBSearcher extends Thread {
 
             try {
                 getUSBDevices();
+                getMTPDevices();
                 sleep(2000);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -42,8 +43,6 @@ public class USBSearcher extends Thread {
             tempListDevices.add(device);
             if (!listDevices.contains(device)) listDevices.add(device);
         }
-        listDevices.retainAll(tempListDevices);
-        System.out.println(listDevices.size());
     }
 
     public void getMTPDevices() throws IOException {
@@ -53,24 +52,28 @@ public class USBSearcher extends Thread {
         while ((line = reader.readLine()) != null) {
             if (line.contains("@")) {
                 String systemName = "/run/user/1000/gvfs/mtp:host=%5Busb%3A00" +
-                        line.substring('@' + 2).split(",")[0].split(" ")[1] + "%2C0" +
-                        line.substring('@' + 2).split(",")[1].split(" ")[1] + "%5D";
+                        line.substring(line.indexOf('@') + 2).split(", ")[0].split(" ")[1] + "%2C0" +
+                        line.substring(line.indexOf('@') + 2).split(", ")[1].split(" ")[1] + "%5D";
                 USBDevice device = new USBDevice(systemName, "", "", "", "");
                 String parseDeviceLine;
                 while ((parseDeviceLine = reader.readLine()) != null) {
-                        if(parseDeviceLine.contains("Model")) device.setName(parseDeviceLine.split(": ")[1]);
-                        if(parseDeviceLine.contains("MaxCapacity")) {
-                            double allSize = Double.parseDouble(parseDeviceLine.split(": ")[1])/1024/1024/1024;
-                            double freeSize = Double.parseDouble(reader.readLine().split(": ")[1])/1024/1024/1024;
-                            double busySize = allSize - freeSize;
-                            device.setSize(String.format("%.2f", allSize));
-                            device.setFreeSize(String.format("%.2f", freeSize));
-                            device.setBusySize(String.format("%.2f", busySize));
-                        }
-                    if(!listDevices.contains(device)) listDevices.add(device);
+                    if (parseDeviceLine.contains("Model")) device.setName(parseDeviceLine.split(": ")[1]);
+                    if (parseDeviceLine.contains("MaxCapacity")) {
+                        double allSize = Double.parseDouble(parseDeviceLine.split(": ")[1]) / 1024 / 1024 / 1024;
+                        double freeSize = Double.parseDouble(reader.readLine().split(": ")[1]) / 1024 / 1024 / 1024;
+                        double busySize = allSize - freeSize;
+                        device.setSize(String.format("%.2f", allSize) + " GB");
+                        device.setFreeSize(String.format("%.2f", freeSize) + " GB");
+                        device.setBusySize(String.format("%.2f", busySize) + " GB");
+                        break;
+                    }
                 }
+                if (device.isCorrect()) tempListDevices.add(device);
+                if (!listDevices.contains(device) && device.isCorrect()) listDevices.add(device);
+
             }
         }
+        listDevices.retainAll(tempListDevices);
     }
 
 
