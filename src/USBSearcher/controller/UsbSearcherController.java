@@ -46,7 +46,12 @@ public class UsbSearcherController {
 
     public UsbSearcherController() {
         searcher = new USBSearcher(listDevices);
-        searcher.start();
+//        searcher.start();
+        try {
+            searcher.getMTPDevices();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void unmountDevice() {
